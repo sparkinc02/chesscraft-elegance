@@ -1,9 +1,7 @@
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import CategoriesSection from '@/components/CategoriesSection';
-import ShopSection from '@/components/ShopSection';
 import CartSidebar from '@/components/CartSidebar';
-import CheckoutModal from '@/components/CheckoutModal';
 import AboutSection from '@/components/AboutSection';
 import ReviewsSection from '@/components/ReviewsSection';
 import ContactSection from '@/components/ContactSection';
@@ -17,14 +15,12 @@ const Index = () => {
       <Navbar />
       <HeroSection />
       <CategoriesSection />
-      <ShopSection />
       <AboutSection />
       <ReviewsSection />
       <ContactSection />
       <PoliciesSection />
       <Footer />
       <CartSidebar />
-      <CheckoutModal />
       <WhatsAppFloat />
     </div>
   );

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-
+import { Link } from 'react-router-dom';
 const pieces = [
   ['♜','♞','♝','♛','♚','♝','♞','♜'],
   ['♟','♟','♟','♟','♟','♟','♟','♟'],
@@ -35,12 +35,12 @@ export default function HeroSection() {
           </p>
 
           <div className="flex flex-wrap gap-4 mb-12">
-            <a
-              href="#shop"
+            <Link
+              to="/shop"
               className="inline-flex items-center px-8 py-3 bg-secondary text-secondary-foreground font-mono text-sm uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-colors"
             >
               Shop Collection
-            </a>
+            </Link>
             <a
               href="#about"
               className="inline-flex items-center px-8 py-3 border border-foreground text-foreground font-mono text-sm uppercase tracking-wider hover:border-primary hover:text-primary transition-colors"

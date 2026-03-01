@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Minus, Trash2, MessageCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '@/stores/cartStore';
 import { useUIStore } from '@/stores/uiStore';
 
@@ -7,7 +8,7 @@ export default function CartSidebar() {
   const { items, removeItem, updateQty, subtotal, shipping, totalItems } = useCartStore();
   const cartOpen = useUIStore((s) => s.cartOpen);
   const setCartOpen = useUIStore((s) => s.setCartOpen);
-  const openCheckout = useUIStore((s) => s.openCheckout);
+  const navigate = useNavigate();
 
   const sub = subtotal();
   const ship = shipping();
@@ -96,7 +97,7 @@ export default function CartSidebar() {
                 )}
 
                 <button
-                  onClick={openCheckout}
+                  onClick={() => { setCartOpen(false); navigate('/checkout'); }}
                   className="w-full py-3 bg-secondary text-secondary-foreground font-mono text-xs uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-colors mt-2"
                 >
                   Proceed to Checkout

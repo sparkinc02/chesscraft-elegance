@@ -1,13 +1,15 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { categories } from '@/data/products';
 import { useUIStore } from '@/stores/uiStore';
 
 export default function CategoriesSection() {
   const setActiveFilter = useUIStore((s) => s.setActiveFilter);
+  const navigate = useNavigate();
 
-  const scrollToShop = (cat: string) => {
+  const goToCategory = (cat: string) => {
     setActiveFilter(cat);
-    document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' });
+    navigate('/shop');
   };
 
   return (
@@ -28,7 +30,7 @@ export default function CategoriesSection() {
           {categories.map((cat, i) => (
             <motion.button
               key={cat.name}
-              onClick={() => scrollToShop(cat.name)}
+              onClick={() => goToCategory(cat.name)}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
