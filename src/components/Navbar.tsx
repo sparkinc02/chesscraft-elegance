@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ShoppingBag } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import { useCartStore } from '@/stores/cartStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useTheme } from '@/hooks/useTheme';
 import { Sun, Moon } from 'lucide-react';
 
 const navLinks = [
-  { label: 'Collection', href: '#categories' },
-  { label: 'Shop', href: '#shop' },
-  { label: 'About', href: '#about' },
-  { label: 'Reviews', href: '#reviews' },
-  { label: 'Contact', href: '#contact' },
-  { label: 'Policies', href: '#policies' },
+  { label: 'Collection', href: '/#categories' },
+  { label: 'Shop', href: '/shop' },
+  { label: 'About', href: '/#about' },
+  { label: 'Reviews', href: '/#reviews' },
+  { label: 'Contact', href: '/#contact' },
+  { label: 'Policies', href: '/#policies' },
 ];
 
 export default function Navbar() {
@@ -42,24 +43,34 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo */}
-          <a href="#" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <span className="text-2xl">♛</span>
             <span className="font-heading text-xl font-bold tracking-wide text-foreground">
               ChessCraft
             </span>
-          </a>
+          </Link>
 
           {/* Desktop Links */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) =>
+              link.href.startsWith('/') && !link.href.includes('#') ? (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {link.label}
+                </a>
+              )
+            )}
           </div>
 
           {/* Right side */}
@@ -119,19 +130,27 @@ export default function Navbar() {
               </button>
             </div>
             <div className="flex flex-col items-center justify-center flex-1 gap-8">
-              {navLinks.map((link, i) => (
-                <motion.a
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.08 }}
-                  className="font-heading text-3xl font-bold text-foreground hover:text-primary transition-colors"
-                >
-                  {link.label}
-                </motion.a>
-              ))}
+              {navLinks.map((link, i) =>
+                link.href.startsWith('/') && !link.href.includes('#') ? (
+                  <motion.div key={link.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
+                    <Link to={link.href} onClick={() => setMobileOpen(false)} className="font-heading text-3xl font-bold text-foreground hover:text-primary transition-colors">
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                ) : (
+                  <motion.a
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    className="font-heading text-3xl font-bold text-foreground hover:text-primary transition-colors"
+                  >
+                    {link.label}
+                  </motion.a>
+                )
+              )}
             </div>
           </motion.div>
         )}
