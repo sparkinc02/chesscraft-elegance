@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 const pieces = [
   ['♜','♞','♝','♛','♚','♝','♞','♜'],
   ['♟','♟','♟','♟','♟','♟','♟','♟'],
@@ -37,9 +38,10 @@ export default function HeroSection() {
           <div className="flex flex-wrap gap-4 mb-12">
             <Link
               to="/shop"
-              className="inline-flex items-center px-8 py-3 bg-secondary text-secondary-foreground font-mono text-sm uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-colors"
+              className="group inline-flex items-center gap-2 px-8 py-3 bg-secondary text-secondary-foreground font-mono text-sm uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-colors"
             >
-              Shop Collection
+              Shop Now
+              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <a
               href="#about"

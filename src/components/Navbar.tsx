@@ -1,20 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingBag, Sun, Moon, User, ShieldCheck, LogOut, Settings, Package } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, ShoppingBag, Sun, Moon, User, ShieldCheck, LogOut, Settings, Package, UserPlus } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCartStore } from '@/stores/cartStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useTheme } from '@/hooks/useTheme';
-
-const navLinks = [
-  { label: 'Collection', href: '/#categories' },
-  { label: 'Shop', href: '/shop' },
-  { label: 'About', href: '/#about' },
-  { label: 'Reviews', href: '/#reviews' },
-  { label: 'Contact', href: '/#contact' },
-  { label: 'Policies', href: '/#policies' },
-];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -62,20 +53,7 @@ export default function Navbar() {
             <span className="font-heading text-xl font-bold tracking-wide text-foreground">ChessCraft</span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) =>
-              link.href.startsWith('/') && !link.href.includes('#') ? (
-                <Link key={link.label} to={link.href} className="font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
-                  {link.label}
-                </Link>
-              ) : (
-                <a key={link.label} href={link.href} className="font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
-                  {link.label}
-                </a>
-              )
-            )}
-          </div>
-
+          {/* Right side controls */}
           <div className="flex items-center gap-3">
             <button onClick={toggleTheme} className="p-2 text-muted-foreground hover:text-primary transition-colors" aria-label="Toggle theme">
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
@@ -92,7 +70,7 @@ export default function Navbar() {
               </AnimatePresence>
             </button>
 
-            {/* User Avatar / Login */}
+            {/* User Avatar / Auth buttons */}
             {user ? (
               <div className="relative" ref={dropdownRef}>
                 <button
@@ -111,7 +89,6 @@ export default function Navbar() {
                       transition={{ duration: 0.15 }}
                       className="absolute right-0 top-12 w-64 bg-card border border-border shadow-xl z-50"
                     >
-                      {/* User info */}
                       <div className="px-4 py-3 border-b border-border">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-primary text-primary-foreground font-mono text-sm font-bold flex items-center justify-center">
@@ -124,7 +101,6 @@ export default function Navbar() {
                         </div>
                       </div>
 
-                      {/* Admin link */}
                       {user.role === 'admin' && (
                         <button
                           onClick={() => { setDropdownOpen(false); navigate('/admin'); }}
@@ -164,9 +140,16 @@ export default function Navbar() {
                 </AnimatePresence>
               </div>
             ) : (
-              <Link to="/login" className="hidden md:flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors">
-                <User size={16} />
-              </Link>
+              <div className="hidden md:flex items-center gap-2">
+                <Link to="/login" className="inline-flex items-center gap-1.5 px-4 py-2 font-mono text-xs uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors border border-border hover:border-primary">
+                  <User size={14} />
+                  Sign In
+                </Link>
+                <Link to="/signup" className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-wider hover:opacity-90 transition-opacity">
+                  <UserPlus size={14} />
+                  Sign Up
+                </Link>
+              </div>
             )}
 
             <button onClick={() => setMobileOpen(true)} className="md:hidden p-2 text-foreground" aria-label="Menu">
@@ -185,22 +168,34 @@ export default function Navbar() {
               <button onClick={() => setMobileOpen(false)} aria-label="Close menu"><X size={24} /></button>
             </div>
             <div className="flex flex-col items-center justify-center flex-1 gap-8">
-              {navLinks.map((link, i) =>
-                link.href.startsWith('/') && !link.href.includes('#') ? (
-                  <motion.div key={link.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
-                    <Link to={link.href} onClick={() => setMobileOpen(false)} className="font-heading text-3xl font-bold text-foreground hover:text-primary transition-colors">
-                      {link.label}
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+                <Link to="/" onClick={() => setMobileOpen(false)} className="font-heading text-3xl font-bold text-foreground hover:text-primary transition-colors">
+                  Home
+                </Link>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                <Link to="/shop" onClick={() => setMobileOpen(false)} className="font-heading text-3xl font-bold text-foreground hover:text-primary transition-colors">
+                  Shop
+                </Link>
+              </motion.div>
+              {!user ? (
+                <>
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                    <Link to="/login" onClick={() => setMobileOpen(false)} className="font-heading text-3xl font-bold text-primary">
+                      Sign In
                     </Link>
                   </motion.div>
-                ) : (
-                  <motion.a key={link.label} href={link.href} onClick={() => setMobileOpen(false)} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} className="font-heading text-3xl font-bold text-foreground hover:text-primary transition-colors">
-                    {link.label}
-                  </motion.a>
-                )
-              )}
-              {!user && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-                  <Link to="/login" onClick={() => setMobileOpen(false)} className="font-heading text-3xl font-bold text-primary">Login</Link>
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+                    <Link to="/signup" onClick={() => setMobileOpen(false)} className="font-heading text-3xl font-bold text-foreground hover:text-primary transition-colors">
+                      Sign Up
+                    </Link>
+                  </motion.div>
+                </>
+              ) : (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                  <Link to="/profile" onClick={() => setMobileOpen(false)} className="font-heading text-3xl font-bold text-foreground hover:text-primary transition-colors">
+                    My Profile
+                  </Link>
                 </motion.div>
               )}
             </div>

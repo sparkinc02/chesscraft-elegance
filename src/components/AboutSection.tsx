@@ -17,21 +17,32 @@ export default function AboutSection() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="hidden lg:block"
+          className="hidden lg:flex flex-col items-center gap-6"
         >
-          <div className="grid grid-cols-8 w-[280px] h-[280px] border border-primary/30 mx-auto">
-            {Array.from({ length: 64 }).map((_, i) => {
-              const row = Math.floor(i / 8);
-              const col = i % 8;
-              const isLight = (row + col) % 2 === 0;
-              return (
-                <div
-                  key={i}
-                  className={isLight ? 'bg-cream/80' : 'bg-walnut/80'}
-                />
-              );
-            })}
+          <div className="relative">
+            {/* Glow effect */}
+            <div className="absolute -inset-6 bg-primary/5 blur-2xl" />
+            <div className="relative grid grid-cols-8 w-[300px] h-[300px] border-2 border-primary/30">
+              {Array.from({ length: 64 }).map((_, i) => {
+                const row = Math.floor(i / 8);
+                const col = i % 8;
+                const isLight = (row + col) % 2 === 0;
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.008 }}
+                    className={isLight ? 'bg-cream/80' : 'bg-walnut/80'}
+                  />
+                );
+              })}
+            </div>
           </div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+            64 Squares · Infinite Possibilities
+          </p>
         </motion.div>
 
         {/* Text */}
@@ -42,7 +53,8 @@ export default function AboutSection() {
           transition={{ duration: 0.6 }}
         >
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-3">Our Story</p>
-          <h2 className="font-heading text-4xl md:text-5xl font-bold mb-8">About ChessCraft</h2>
+          <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">About ChessCraft</h2>
+          <div className="w-16 h-[2px] bg-primary mb-8" />
 
           <div className="space-y-5 font-body text-lg leading-relaxed text-secondary-foreground/80">
             <p>
@@ -68,7 +80,7 @@ export default function AboutSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="border border-primary/30 p-5 hover:shadow-[0_0_20px_hsl(42_62%_55%/0.15)] transition-shadow"
+                className="border border-primary/30 p-5 hover:shadow-[0_0_20px_hsl(42_62%_55%/0.15)] hover:border-primary/60 transition-all duration-300"
               >
                 <span className="text-2xl block mb-2">{v.emoji}</span>
                 <h4 className="font-heading text-sm font-bold mb-1">{v.title}</h4>
