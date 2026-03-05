@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
+import { Hammer, Crown, Zap, Award } from 'lucide-react';
 
 const values = [
-  { emoji: '🪵', title: 'Handcrafted Quality', desc: 'Every piece made with care and precision' },
-  { emoji: '♟', title: 'Expert Curated', desc: 'Selected by chess masters and enthusiasts' },
-  { emoji: '🚀', title: 'Fast Dispatch', desc: 'Orders shipped within 24 hours' },
-  { emoji: '🏆', title: 'Certified Products', desc: 'FIDE approved tournament equipment' },
+  { icon: Hammer, title: 'Handcrafted Quality', desc: 'Every piece made with care and precision' },
+  { icon: Crown, title: 'Expert Curated', desc: 'Selected by chess masters and enthusiasts' },
+  { icon: Zap, title: 'Fast Dispatch', desc: 'Orders shipped within 24 hours' },
+  { icon: Award, title: 'Certified Products', desc: 'FIDE approved tournament equipment' },
 ];
 
 export default function AboutSection() {
@@ -82,7 +83,7 @@ export default function AboutSection() {
                 transition={{ delay: i * 0.1 }}
                 className="border border-primary/30 p-5 hover:shadow-[0_0_20px_hsl(42_62%_55%/0.15)] hover:border-primary/60 transition-all duration-300"
               >
-                <span className="text-2xl block mb-2">{v.emoji}</span>
+                <v.icon size={24} className="text-primary mb-2" />
                 <h4 className="font-heading text-sm font-bold mb-1">{v.title}</h4>
                 <p className="font-mono text-[10px] text-secondary-foreground/60">{v.desc}</p>
               </motion.div>

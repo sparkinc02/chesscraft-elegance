@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, ShoppingBag, Plus, Minus } from 'lucide-react';
+import { ShoppingBag, Plus, Minus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Product } from '@/data/products';
 import { useCartStore } from '@/stores/cartStore';
@@ -141,13 +141,6 @@ export default function ShopProductCard({ product, index, listView }: Props) {
         </div>
 
         <div className="p-5">
-          <div className="flex items-center gap-0.5 mb-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} size={12} className={i < product.stars ? 'fill-primary text-primary' : 'text-border'} />
-            ))}
-            <span className="font-mono text-[10px] text-muted-foreground ml-2">{product.rating}</span>
-          </div>
-
           <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-1">{product.category}</p>
           <h3 className="font-heading text-lg font-bold text-foreground group-hover:text-primary transition-colors mb-1">{product.name}</h3>
           <p className="font-body text-sm text-muted-foreground mb-4 leading-relaxed line-clamp-2">{product.description}</p>
