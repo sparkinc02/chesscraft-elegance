@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Minus, Trash2, MessageCircle } from 'lucide-react';
+import { X, Plus, Minus, Trash2 } from 'lucide-react';
+import WhatsAppIcon from './WhatsAppIcon';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '@/stores/cartStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -108,7 +109,7 @@ export default function CartSidebar() {
                   rel="noopener noreferrer"
                   className="w-full py-3 bg-[#25D366] text-secondary font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
                 >
-                  <MessageCircle size={14} />
+                  <WhatsAppIcon size={14} />
                   Order via WhatsApp
                 </a>
               </div>
