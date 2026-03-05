@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Plus, Minus } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Product } from '@/data/products';
 import { useCartStore } from '@/stores/cartStore';
@@ -71,7 +71,7 @@ export default function ShopProductCard({ product, index, listView }: Props) {
             <AnimatePresence>
               {cartQty > 0 && (
                 <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="absolute bottom-2 left-2 bg-primary text-secondary font-mono text-[10px] px-2 py-0.5 tracking-wider">
-                  🛒 × {cartQty}
+                  <ShoppingCart size={12} className="inline mr-1" /> × {cartQty}
                 </motion.span>
               )}
             </AnimatePresence>
@@ -134,7 +134,7 @@ export default function ShopProductCard({ product, index, listView }: Props) {
                 transition={{ duration: 0.3 }}
                 className="absolute bottom-3 left-3 bg-primary text-secondary font-mono text-[10px] px-2 py-1 tracking-wider"
               >
-                🛒 × {cartQty}
+                <ShoppingCart size={12} className="inline mr-1" /> × {cartQty}
               </motion.span>
             )}
           </AnimatePresence>
