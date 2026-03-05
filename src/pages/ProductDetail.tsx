@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, ShoppingBag, ArrowLeft, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 import { products, getProductViews } from '@/data/products';
 import { useCartStore } from '@/stores/cartStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -189,16 +189,6 @@ export default function ProductDetail() {
             <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="flex flex-col">
               <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-3">{product.category}</p>
               <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-4">{product.name}</h1>
-
-              {/* Rating */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={16} className={i < product.stars ? 'fill-primary text-primary' : 'text-border'} />
-                  ))}
-                </div>
-                <span className="font-mono text-sm text-muted-foreground">{product.rating} / 5</span>
-              </div>
 
               {/* Stock */}
               <div className="mb-6">

@@ -80,7 +80,7 @@ export default function PoliciesSection() {
               <div className="absolute top-0 left-0 right-0 h-[2px] bg-primary scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
               
               <div className="flex items-center gap-3 mb-6">
-                <span className="text-3xl">{policy.emoji}</span>
+                <policy.icon size={28} className="text-primary shrink-0" />
                 <h3 className="font-heading text-xl font-bold">{policy.title}</h3>
               </div>
               <ul className="space-y-3">
