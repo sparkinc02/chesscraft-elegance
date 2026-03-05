@@ -175,7 +175,7 @@ export default function Checkout() {
               animate={{ opacity: 1, y: 0 }}
             >
               <h2 className="font-heading text-xl font-bold mb-6">Delivery Details</h2>
-              <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl space-y-5">
+              <form onSubmit={handleSubmit(onSubmit)} className="max-w-2xl mx-auto space-y-5">
                 {[
                   { name: 'fullName' as const, label: 'Full Name', required: true },
                   { name: 'email' as const, label: 'Email', required: true },
@@ -214,7 +214,7 @@ export default function Checkout() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="max-w-xl"
+              className="max-w-2xl mx-auto"
             >
               <h2 className="font-heading text-xl font-bold mb-6">Payment Method</h2>
               <div className="space-y-3 mb-8">

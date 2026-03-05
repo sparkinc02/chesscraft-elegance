@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, Clock, MessageCircle, Instagram } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Instagram } from 'lucide-react';
+import WhatsAppIcon from '@/components/WhatsAppIcon';
 import { useForm } from 'react-hook-form';
 
 const contactInfo = [
@@ -8,7 +9,7 @@ const contactInfo = [
   { icon: Phone, label: '+91 98765 43210' },
   { icon: Mail, label: 'hello@chesscraftindia.com' },
   { icon: Clock, label: 'Mon–Sat, 10 AM – 7 PM IST' },
-  { icon: MessageCircle, label: 'Chat with us for instant support' },
+  { icon: WhatsAppIcon, label: 'Chat with us on WhatsApp' },
   { icon: Instagram, label: '@chesscraftindia' },
 ];
 

@@ -1,4 +1,5 @@
-import { MessageCircle, Instagram } from 'lucide-react';
+import { Instagram } from 'lucide-react';
+import WhatsAppIcon from '@/components/WhatsAppIcon';
 
 const quickLinks = ['Home', 'Shop', 'About Us', 'Contact Us', 'Track Order', 'Blog (coming soon)'];
 const policyLinks = ['Payment Policy', 'Refund Policy', 'Return Policy', 'Privacy Policy', 'Terms of Service'];
@@ -25,7 +26,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="w-9 h-9 border border-border flex items-center justify-center text-muted-foreground hover:text-[#25D366] hover:border-[#25D366] transition-colors"
             >
-              <MessageCircle size={16} />
+              <WhatsAppIcon size={16} />
             </a>
             <a
               href="#"
