@@ -4,14 +4,33 @@ export interface LoginRequest {
 }
 
 export interface SignupRequest {
-  name: string;
   email: string;
-  phone: string;
+  userName: string;
   password: string;
+  phone?: string;
 }
 
-export interface GoogleAuthRequest {
+export interface SendEmailOtpRequest {
+  email: string;
+}
+
+export interface SendEmailOtpResponse {
+  message: string;
+  data: {
+    otpToken: string;
+  };
+}
+
+export interface VerifyEmailOtpRequest {
+  otp: string;
   token: string;
+}
+
+export interface VerifyEmailOtpResponse {
+  message: string;
+  data: {
+    email: string;
+  };
 }
 
 export interface ForgotPasswordRequest {
@@ -19,12 +38,7 @@ export interface ForgotPasswordRequest {
 }
 
 export interface ResetPasswordRequest {
-  token: string;
   newPassword: string;
-}
-
-export interface VerifyEmailRequest {
-  token: string;
 }
 
 export interface AuthUser {
@@ -43,8 +57,13 @@ export interface AuthUser {
 }
 
 export interface AuthResponse {
-  success: boolean;
-  message?: string;
-  user?: AuthUser;
-  token?: string;
+  message: string;
+  data: {
+    user: AuthUser;
+    accessToken: string;
+  };
+}
+
+export interface GenericResponse {
+  message: string;
 }
