@@ -23,7 +23,7 @@ interface ResetForm {
 
 export default function Login() {
   const navigate = useNavigate();
-  const login = useAuthStore((s) => s.login);
+  const { login, forgotPassword, resetPassword, googleLogin } = useAuthStore();
   const [view, setView] = useState<View>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -35,47 +35,55 @@ export default function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>();
   const resetForm = useForm<ResetForm>();
 
-  const onLogin = (data: LoginForm) => {
+  const onLogin = async (data: LoginForm) => {
     setLoading(true);
-    setTimeout(() => {
-      const result = login(data.email, data.password);
-      setLoading(false);
-      if (result.success) {
-        toast.success('Welcome back! ♛');
-        navigate('/');
-      } else {
-        toast.error(result.error);
-      }
-    }, 500);
+    const result = await login(data.email, data.password);
+    setLoading(false);
+    if (result.success) {
+      toast.success('Welcome back! ♛');
+      navigate('/');
+    } else {
+      toast.error(result.error);
+    }
   };
 
-  const handleForgotEmail = (e: React.FormEvent) => {
+  const handleGoogleLogin = async () => {
+    // The google token will be provided by the Google Sign-In SDK
+    // For now this is a placeholder — the parent app will pass the token
+    toast.info('Google Sign-In will be connected to your backend.');
+  };
+
+  const handleForgotEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetEmail.trim()) return;
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    const result = await forgotPassword(resetEmail);
+    setLoading(false);
+    if (result.success) {
       toast.success(`Reset code sent to ${resetEmail}`);
       setView('forgot-reset');
-    }, 1000);
+    } else {
+      toast.error(result.error || 'Failed to send reset code');
+    }
   };
 
-  const handleResetPassword = (data: ResetForm) => {
-    if (otp !== '123456') {
-      setOtpError('Incorrect OTP. Try again.');
-      setShakeOtp(true);
-      setTimeout(() => setShakeOtp(false), 600);
-      return;
-    }
+  const handleResetPassword = async (data: ResetForm) => {
     if (data.newPassword !== data.confirmPassword) {
       resetForm.setError('confirmPassword', { message: 'Passwords do not match' });
       return;
     }
-    toast.success('Password reset successfully!');
-    setView('login');
-    setOtp('');
-    setOtpError('');
-    setResetEmail('');
+    const result = await resetPassword(otp, data.newPassword);
+    if (result.success) {
+      toast.success('Password reset successfully!');
+      setView('login');
+      setOtp('');
+      setOtpError('');
+      setResetEmail('');
+    } else {
+      setOtpError(result.error || 'Incorrect OTP. Try again.');
+      setShakeOtp(true);
+      setTimeout(() => setShakeOtp(false), 600);
+    }
   };
 
   const getPasswordStrength = (pw: string) => {
@@ -148,7 +156,7 @@ export default function Login() {
                   <div className="relative flex justify-center"><span className="bg-background px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">or</span></div>
                 </div>
 
-                <button type="button" className="w-full py-3.5 border border-border bg-card font-mono text-xs uppercase tracking-wider text-foreground hover:bg-muted transition-colors flex items-center justify-center gap-3">
+                <button type="button" onClick={handleGoogleLogin} className="w-full py-3.5 border border-border bg-card font-mono text-xs uppercase tracking-wider text-foreground hover:bg-muted transition-colors flex items-center justify-center gap-3">
                   <svg viewBox="0 0 24 24" width="18" height="18">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>

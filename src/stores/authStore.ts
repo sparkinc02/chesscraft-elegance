@@ -1,19 +1,8 @@
 import { create } from 'zustand';
+import authService from '@/services/authService';
+import type { AuthUser } from '@/types/auth.types';
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: 'admin' | 'user';
-  address?: {
-    address1: string;
-    address2: string;
-    city: string;
-    state: string;
-    pin: string;
-  };
-}
+export type User = AuthUser;
 
 export interface Order {
   id: string;
@@ -51,11 +40,7 @@ const mockOrders: Order[] = [
       { id: 1, name: 'Grandmaster Rosewood Set', emoji: '♟', category: 'Chess Sets', price: 8499, qty: 1 },
       { id: 4, name: 'DGT 3000 Chess Clock', emoji: '⏱', category: 'Accessories', price: 2899, qty: 1 },
     ],
-    subtotal: 11398,
-    shipping: 0,
-    gst: 2052,
-    grandTotal: 13450,
-    paymentMethod: 'UPI',
+    subtotal: 11398, shipping: 0, gst: 2052, grandTotal: 13450, paymentMethod: 'UPI',
     deliveryAddress: { name: 'Arjun Mehta', address1: '42 Chess Lane', address2: 'T. Nagar', city: 'Chennai', state: 'Tamil Nadu', pin: '600017', phone: '+91 98765 43210' },
     trackingSteps: [
       { label: 'Order Placed', date: 'Feb 20, 2026', done: true },
@@ -71,11 +56,7 @@ const mockOrders: Order[] = [
     items: [
       { id: 7, name: 'My System — Nimzowitsch', emoji: '📖', category: 'Books', price: 549, qty: 2 },
     ],
-    subtotal: 1098,
-    shipping: 0,
-    gst: 198,
-    grandTotal: 1296,
-    paymentMethod: 'Credit/Debit Card',
+    subtotal: 1098, shipping: 0, gst: 198, grandTotal: 1296, paymentMethod: 'Credit/Debit Card',
     deliveryAddress: { name: 'Arjun Mehta', address1: '42 Chess Lane', address2: 'T. Nagar', city: 'Chennai', state: 'Tamil Nadu', pin: '600017', phone: '+91 98765 43210' },
     trackingSteps: [
       { label: 'Order Placed', date: 'Feb 28, 2026', done: true },
@@ -92,11 +73,7 @@ const mockOrders: Order[] = [
       { id: 2, name: 'Walnut & Maple Board', emoji: '♜', category: 'Boards', price: 4299, qty: 1 },
       { id: 9, name: 'Chess Bag Deluxe', emoji: '🎒', category: 'Accessories', price: 1199, qty: 1 },
     ],
-    subtotal: 5498,
-    shipping: 0,
-    gst: 990,
-    grandTotal: 6488,
-    paymentMethod: 'Cash on Delivery',
+    subtotal: 5498, shipping: 0, gst: 990, grandTotal: 6488, paymentMethod: 'Cash on Delivery',
     deliveryAddress: { name: 'Arjun Mehta', address1: '42 Chess Lane', address2: 'T. Nagar', city: 'Chennai', state: 'Tamil Nadu', pin: '600017', phone: '+91 98765 43210' },
     trackingSteps: [
       { label: 'Order Placed', date: 'Mar 1, 2026', done: true },
@@ -107,11 +84,18 @@ const mockOrders: Order[] = [
   },
 ];
 
+const USE_API = !!import.meta.env.VITE_API_BASE_URL;
+
 interface AuthStore {
   user: User | null;
   orders: Order[];
-  login: (email: string, password: string) => { success: boolean; error?: string };
-  signup: (name: string, email: string, phone: string, password: string) => { success: boolean; error?: string };
+  loading: boolean;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signup: (name: string, email: string, phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  googleLogin: (token: string) => Promise<{ success: boolean; error?: string }>;
+  verifyEmail: (token: string) => Promise<{ success: boolean; error?: string }>;
+  forgotPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
+  resetPassword: (token: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   updateAddress: (address: User['address']) => void;
   getOrder: (id: string) => Order | undefined;
@@ -120,7 +104,25 @@ interface AuthStore {
 export const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   orders: mockOrders,
-  login: (email, password) => {
+  loading: false,
+
+  login: async (email, password) => {
+    if (USE_API) {
+      try {
+        set({ loading: true });
+        const res = await authService.login({ email, password });
+        if (res.success && res.user) {
+          set({ user: res.user, loading: false });
+          return { success: true };
+        }
+        set({ loading: false });
+        return { success: false, error: res.message || 'Login failed' };
+      } catch (e: any) {
+        set({ loading: false });
+        return { success: false, error: e.message || 'Login failed' };
+      }
+    }
+    // Mock fallback
     const found = mockUsers.find((u) => u.email === email && u.password === password);
     if (found) {
       const { password: _, ...user } = found;
@@ -129,7 +131,24 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
     return { success: false, error: 'Invalid email or password' };
   },
-  signup: (name, email, phone, password) => {
+
+  signup: async (name, email, phone, password) => {
+    if (USE_API) {
+      try {
+        set({ loading: true });
+        const res = await authService.signup({ name, email, phone, password });
+        if (res.success && res.user) {
+          set({ user: res.user, loading: false });
+          return { success: true };
+        }
+        set({ loading: false });
+        return { success: false, error: res.message || 'Signup failed' };
+      } catch (e: any) {
+        set({ loading: false });
+        return { success: false, error: e.message || 'Signup failed' };
+      }
+    }
+    // Mock fallback
     if (mockUsers.find((u) => u.email === email)) {
       return { success: false, error: 'Email already registered' };
     }
@@ -138,7 +157,69 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ user: newUser });
     return { success: true };
   },
-  logout: () => set({ user: null }),
+
+  googleLogin: async (token) => {
+    if (USE_API) {
+      try {
+        set({ loading: true });
+        const res = await authService.googleLogin({ token });
+        if (res.success && res.user) {
+          set({ user: res.user, loading: false });
+          return { success: true };
+        }
+        set({ loading: false });
+        return { success: false, error: res.message || 'Google login failed' };
+      } catch (e: any) {
+        set({ loading: false });
+        return { success: false, error: e.message || 'Google login failed' };
+      }
+    }
+    return { success: false, error: 'Google login not available in mock mode' };
+  },
+
+  verifyEmail: async (token) => {
+    if (USE_API) {
+      try {
+        const res = await authService.verifyEmail({ token });
+        return { success: res.success, error: res.message };
+      } catch (e: any) {
+        return { success: false, error: e.message || 'Verification failed' };
+      }
+    }
+    // Mock: accept '123456'
+    return token === '123456' ? { success: true } : { success: false, error: 'Incorrect OTP. Try again.' };
+  },
+
+  forgotPassword: async (email) => {
+    if (USE_API) {
+      try {
+        const res = await authService.forgotPassword({ email });
+        return { success: res.success, error: res.message };
+      } catch (e: any) {
+        return { success: false, error: e.message || 'Failed to send reset code' };
+      }
+    }
+    return { success: true };
+  },
+
+  resetPassword: async (token, newPassword) => {
+    if (USE_API) {
+      try {
+        const res = await authService.resetPassword({ token, newPassword });
+        return { success: res.success, error: res.message };
+      } catch (e: any) {
+        return { success: false, error: e.message || 'Reset failed' };
+      }
+    }
+    // Mock: accept '123456'
+    return token === '123456' ? { success: true } : { success: false, error: 'Incorrect OTP. Try again.' };
+  },
+
+  logout: () => {
+    authService.logout();
+    set({ user: null });
+  },
+
   updateAddress: (address) => set((s) => s.user ? { user: { ...s.user, address } } : {}),
   getOrder: (id) => get().orders.find((o) => o.id === id),
 }));
