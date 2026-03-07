@@ -18,7 +18,7 @@ interface SignupForm {
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { signup, verifyEmail, googleLogin } = useAuthStore();
+  const { signup, sendEmailOtp, verifyEmailOtp } = useAuthStore();
   const [step, setStep] = useState<'form' | 'otp'>('form');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
