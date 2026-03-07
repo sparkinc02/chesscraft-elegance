@@ -18,7 +18,7 @@ interface SignupForm {
 
 export default function Signup() {
   const navigate = useNavigate();
-  const signup = useAuthStore((s) => s.signup);
+  const { signup, verifyEmail, googleLogin } = useAuthStore();
   const [step, setStep] = useState<'form' | 'otp'>('form');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,7 +28,7 @@ export default function Signup() {
   const [shakeOtp, setShakeOtp] = useState(false);
   const [timer, setTimer] = useState(45);
 
-  const { register, handleSubmit, formState: { errors }, getValues } = useForm<SignupForm>();
+  const { register, handleSubmit, formState: { errors } } = useForm<SignupForm>();
 
   useEffect(() => {
     if (step !== 'otp') return;
@@ -44,27 +44,36 @@ export default function Signup() {
     toast.success(`OTP sent to ${data.email}`);
   };
 
-  const handleVerify = useCallback(() => {
+  const handleVerify = useCallback(async () => {
     if (otp.length !== 6) return;
     setLoading(true);
-    setTimeout(() => {
-      if (otp === '123456') {
-        const result = signup(formData!.name, formData!.email, formData!.phone, formData!.password);
-        setLoading(false);
-        if (result.success) {
-          toast.success(`Welcome to ChessCraft, ${formData!.name}! ♛`);
-          navigate('/');
-        } else {
-          toast.error(result.error);
-        }
-      } else {
-        setLoading(false);
-        setOtpError('Incorrect OTP. Try again.');
-        setShakeOtp(true);
-        setTimeout(() => setShakeOtp(false), 600);
-      }
-    }, 800);
-  }, [otp, formData, signup, navigate]);
+
+    // Verify email/OTP first
+    const verifyResult = await verifyEmail(otp);
+    if (!verifyResult.success) {
+      setLoading(false);
+      setOtpError(verifyResult.error || 'Incorrect OTP. Try again.');
+      setShakeOtp(true);
+      setTimeout(() => setShakeOtp(false), 600);
+      return;
+    }
+
+    // Then create the account
+    const result = await signup(formData!.name, formData!.email, formData!.phone, formData!.password);
+    setLoading(false);
+    if (result.success) {
+      toast.success(`Welcome to ChessCraft, ${formData!.name}! ♛`);
+      navigate('/');
+    } else {
+      toast.error(result.error);
+    }
+  }, [otp, formData, signup, verifyEmail, navigate]);
+
+  const handleGoogleSignup = async () => {
+    // The google token will be provided by the Google Sign-In SDK
+    // For now this is a placeholder — the parent app will pass the token
+    toast.info('Google Sign-Up will be connected to your backend.');
+  };
 
   const handleResend = () => {
     setTimer(45);
@@ -140,7 +149,7 @@ export default function Signup() {
                   <div className="relative flex justify-center"><span className="bg-background px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">or</span></div>
                 </div>
 
-                <button type="button" className="w-full py-3.5 border border-border bg-card font-mono text-xs uppercase tracking-wider text-foreground hover:bg-muted transition-colors flex items-center justify-center gap-3">
+                <button type="button" onClick={handleGoogleSignup} className="w-full py-3.5 border border-border bg-card font-mono text-xs uppercase tracking-wider text-foreground hover:bg-muted transition-colors flex items-center justify-center gap-3">
                   <svg viewBox="0 0 24 24" width="18" height="18">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
