@@ -82,9 +82,15 @@ export default function Signup() {
     toast.info('Google Sign-Up will be connected to your backend.');
   };
 
-  const handleResend = () => {
-    setTimer(45);
-    toast.success(`OTP resent to ${formData?.email}`);
+  const handleResend = async () => {
+    if (!formData) return;
+    const result = await sendEmailOtp(formData.email);
+    if (result.success) {
+      setTimer(45);
+      toast.success(`OTP resent to ${formData.email}`);
+    } else {
+      toast.error(result.error || 'Failed to resend OTP');
+    }
   };
 
   return (
