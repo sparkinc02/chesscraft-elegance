@@ -90,10 +90,11 @@ interface AuthStore {
   user: User | null;
   orders: Order[];
   loading: boolean;
+  otpToken: string | null;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  sendEmailOtp: (email: string) => Promise<{ success: boolean; error?: string }>;
+  verifyEmailOtp: (otp: string) => Promise<{ success: boolean; error?: string }>;
   signup: (name: string, email: string, phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  googleLogin: (token: string) => Promise<{ success: boolean; error?: string }>;
-  verifyEmail: (token: string) => Promise<{ success: boolean; error?: string }>;
   forgotPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   resetPassword: (token: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
@@ -105,18 +106,15 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   orders: mockOrders,
   loading: false,
+  otpToken: null,
 
   login: async (email, password) => {
     if (USE_API) {
       try {
         set({ loading: true });
         const res = await authService.login({ email, password });
-        if (res.success && res.user) {
-          set({ user: res.user, loading: false });
-          return { success: true };
-        }
-        set({ loading: false });
-        return { success: false, error: res.message || 'Login failed' };
+        set({ user: res.data.user, loading: false });
+        return { success: true };
       } catch (e: any) {
         set({ loading: false });
         return { success: false, error: e.message || 'Login failed' };
@@ -132,17 +130,48 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     return { success: false, error: 'Invalid email or password' };
   },
 
+  sendEmailOtp: async (email) => {
+    if (USE_API) {
+      try {
+        set({ loading: true });
+        const res = await authService.sendEmailOtp({ email });
+        set({ otpToken: res.data.otpToken, loading: false });
+        return { success: true };
+      } catch (e: any) {
+        set({ loading: false });
+        return { success: false, error: e.message || 'Failed to send OTP' };
+      }
+    }
+    // Mock fallback
+    set({ otpToken: 'mock-otp-token' });
+    return { success: true };
+  },
+
+  verifyEmailOtp: async (otp) => {
+    const token = get().otpToken;
+    if (USE_API) {
+      if (!token) return { success: false, error: 'No OTP token found. Please request OTP again.' };
+      try {
+        set({ loading: true });
+        await authService.verifyEmailOtp({ otp, token });
+        set({ loading: false });
+        return { success: true };
+      } catch (e: any) {
+        set({ loading: false });
+        return { success: false, error: e.message || 'Verification failed' };
+      }
+    }
+    // Mock: accept '123456'
+    return otp === '123456' ? { success: true } : { success: false, error: 'Incorrect OTP. Try again.' };
+  },
+
   signup: async (name, email, phone, password) => {
     if (USE_API) {
       try {
         set({ loading: true });
-        const res = await authService.signup({ name, email, phone, password });
-        if (res.success && res.user) {
-          set({ user: res.user, loading: false });
-          return { success: true };
-        }
-        set({ loading: false });
-        return { success: false, error: res.message || 'Signup failed' };
+        const res = await authService.signup({ userName: name, email, password, phone });
+        set({ user: res.data.user, otpToken: null, loading: false });
+        return { success: true };
       } catch (e: any) {
         set({ loading: false });
         return { success: false, error: e.message || 'Signup failed' };
@@ -154,49 +183,20 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
     const newUser: User = { id: String(Date.now()), name, email, phone, role: 'user' };
     mockUsers.push({ ...newUser, password });
-    set({ user: newUser });
+    set({ user: newUser, otpToken: null });
     return { success: true };
-  },
-
-  googleLogin: async (token) => {
-    if (USE_API) {
-      try {
-        set({ loading: true });
-        const res = await authService.googleLogin({ token });
-        if (res.success && res.user) {
-          set({ user: res.user, loading: false });
-          return { success: true };
-        }
-        set({ loading: false });
-        return { success: false, error: res.message || 'Google login failed' };
-      } catch (e: any) {
-        set({ loading: false });
-        return { success: false, error: e.message || 'Google login failed' };
-      }
-    }
-    return { success: false, error: 'Google login not available in mock mode' };
-  },
-
-  verifyEmail: async (token) => {
-    if (USE_API) {
-      try {
-        const res = await authService.verifyEmail({ token });
-        return { success: res.success, error: res.message };
-      } catch (e: any) {
-        return { success: false, error: e.message || 'Verification failed' };
-      }
-    }
-    // Mock: accept '123456'
-    return token === '123456' ? { success: true } : { success: false, error: 'Incorrect OTP. Try again.' };
   },
 
   forgotPassword: async (email) => {
     if (USE_API) {
       try {
-        const res = await authService.forgotPassword({ email });
-        return { success: res.success, error: res.message };
+        set({ loading: true });
+        await authService.forgotPassword({ email });
+        set({ loading: false });
+        return { success: true };
       } catch (e: any) {
-        return { success: false, error: e.message || 'Failed to send reset code' };
+        set({ loading: false });
+        return { success: false, error: e.message || 'Failed to send reset link' };
       }
     }
     return { success: true };
@@ -205,9 +205,12 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   resetPassword: async (token, newPassword) => {
     if (USE_API) {
       try {
-        const res = await authService.resetPassword({ token, newPassword });
-        return { success: res.success, error: res.message };
+        set({ loading: true });
+        await authService.resetPassword(token, { newPassword });
+        set({ loading: false });
+        return { success: true };
       } catch (e: any) {
+        set({ loading: false });
         return { success: false, error: e.message || 'Reset failed' };
       }
     }
@@ -216,8 +219,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   logout: () => {
-    authService.logout();
-    set({ user: null });
+    if (USE_API) {
+      authService.logout();
+    }
+    localStorage.removeItem('auth_token');
+    set({ user: null, otpToken: null });
   },
 
   updateAddress: (address) => set((s) => s.user ? { user: { ...s.user, address } } : {}),

@@ -23,7 +23,7 @@ interface ResetForm {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, forgotPassword, resetPassword, googleLogin } = useAuthStore();
+  const { login, forgotPassword, resetPassword } = useAuthStore();
   const [view, setView] = useState<View>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);

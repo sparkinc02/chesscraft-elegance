@@ -2,56 +2,61 @@ import apiClient from './apiClient';
 import type {
   LoginRequest,
   SignupRequest,
-  GoogleAuthRequest,
+  SendEmailOtpRequest,
+  SendEmailOtpResponse,
+  VerifyEmailOtpRequest,
+  VerifyEmailOtpResponse,
   ForgotPasswordRequest,
   ResetPasswordRequest,
-  VerifyEmailRequest,
   AuthResponse,
+  GenericResponse,
 } from '@/types/auth.types';
 
 const AUTH_PREFIX = '/auth';
 
 export const authService = {
-  async login(data: LoginRequest): Promise<AuthResponse> {
-    const res = await apiClient.post<AuthResponse>(`${AUTH_PREFIX}/login`, data);
-    if (res.data.token) {
-      localStorage.setItem('auth_token', res.data.token);
-    }
+  async sendEmailOtp(data: SendEmailOtpRequest): Promise<SendEmailOtpResponse> {
+    const res = await apiClient.post<SendEmailOtpResponse>(`${AUTH_PREFIX}/send-email-verification-otp`, data);
+    return res.data;
+  },
+
+  async verifyEmailOtp(data: VerifyEmailOtpRequest): Promise<VerifyEmailOtpResponse> {
+    const res = await apiClient.post<VerifyEmailOtpResponse>(`${AUTH_PREFIX}/verify-email`, data);
     return res.data;
   },
 
   async signup(data: SignupRequest): Promise<AuthResponse> {
     const res = await apiClient.post<AuthResponse>(`${AUTH_PREFIX}/signup`, data);
-    if (res.data.token) {
-      localStorage.setItem('auth_token', res.data.token);
+    if (res.data.data?.accessToken) {
+      localStorage.setItem('auth_token', res.data.data.accessToken);
     }
     return res.data;
   },
 
-  async googleLogin(data: GoogleAuthRequest): Promise<AuthResponse> {
-    const res = await apiClient.post<AuthResponse>(`${AUTH_PREFIX}/google`, data);
-    if (res.data.token) {
-      localStorage.setItem('auth_token', res.data.token);
+  async login(data: LoginRequest): Promise<AuthResponse> {
+    const res = await apiClient.post<AuthResponse>(`${AUTH_PREFIX}/login`, data);
+    if (res.data.data?.accessToken) {
+      localStorage.setItem('auth_token', res.data.data.accessToken);
     }
     return res.data;
   },
 
-  async verifyEmail(data: VerifyEmailRequest): Promise<AuthResponse> {
-    const res = await apiClient.post<AuthResponse>(`${AUTH_PREFIX}/verify-email`, data);
+  async forgotPassword(data: ForgotPasswordRequest): Promise<GenericResponse> {
+    const res = await apiClient.post<GenericResponse>(`${AUTH_PREFIX}/forgot-password`, data);
     return res.data;
   },
 
-  async forgotPassword(data: ForgotPasswordRequest): Promise<AuthResponse> {
-    const res = await apiClient.post<AuthResponse>(`${AUTH_PREFIX}/forgot-password`, data);
+  async resetPassword(token: string, data: ResetPasswordRequest): Promise<GenericResponse> {
+    const res = await apiClient.post<GenericResponse>(`${AUTH_PREFIX}/reset-password/${token}`, data);
     return res.data;
   },
 
-  async resetPassword(data: ResetPasswordRequest): Promise<AuthResponse> {
-    const res = await apiClient.post<AuthResponse>(`${AUTH_PREFIX}/reset-password`, data);
-    return res.data;
-  },
-
-  logout() {
+  async logout(): Promise<void> {
+    try {
+      await apiClient.post(`${AUTH_PREFIX}/logout`);
+    } catch {
+      // silent — clear local state regardless
+    }
     localStorage.removeItem('auth_token');
   },
 };

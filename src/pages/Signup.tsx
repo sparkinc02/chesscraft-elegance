@@ -18,7 +18,7 @@ interface SignupForm {
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { signup, verifyEmail, googleLogin } = useAuthStore();
+  const { signup, sendEmailOtp, verifyEmailOtp } = useAuthStore();
   const [step, setStep] = useState<'form' | 'otp'>('form');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,19 +37,26 @@ export default function Signup() {
     return () => clearInterval(interval);
   }, [step, timer]);
 
-  const onFormSubmit = (data: SignupForm) => {
+  const onFormSubmit = async (data: SignupForm) => {
     setFormData(data);
-    setStep('otp');
-    setTimer(45);
-    toast.success(`OTP sent to ${data.email}`);
+    setLoading(true);
+    const result = await sendEmailOtp(data.email);
+    setLoading(false);
+    if (result.success) {
+      setStep('otp');
+      setTimer(45);
+      toast.success(`OTP sent to ${data.email}`);
+    } else {
+      toast.error(result.error || 'Failed to send OTP');
+    }
   };
 
   const handleVerify = useCallback(async () => {
     if (otp.length !== 6) return;
     setLoading(true);
 
-    // Verify email/OTP first
-    const verifyResult = await verifyEmail(otp);
+    // Verify email OTP
+    const verifyResult = await verifyEmailOtp(otp);
     if (!verifyResult.success) {
       setLoading(false);
       setOtpError(verifyResult.error || 'Incorrect OTP. Try again.');
@@ -67,7 +74,7 @@ export default function Signup() {
     } else {
       toast.error(result.error);
     }
-  }, [otp, formData, signup, verifyEmail, navigate]);
+  }, [otp, formData, signup, verifyEmailOtp, navigate]);
 
   const handleGoogleSignup = async () => {
     // The google token will be provided by the Google Sign-In SDK
@@ -75,9 +82,15 @@ export default function Signup() {
     toast.info('Google Sign-Up will be connected to your backend.');
   };
 
-  const handleResend = () => {
-    setTimer(45);
-    toast.success(`OTP resent to ${formData?.email}`);
+  const handleResend = async () => {
+    if (!formData) return;
+    const result = await sendEmailOtp(formData.email);
+    if (result.success) {
+      setTimer(45);
+      toast.success(`OTP resent to ${formData.email}`);
+    } else {
+      toast.error(result.error || 'Failed to resend OTP');
+    }
   };
 
   return (
