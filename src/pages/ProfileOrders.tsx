@@ -35,22 +35,22 @@ export default function ProfileOrders() {
           <div className="space-y-4">
             {orders.map((order, i) => (
               <motion.div key={order.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
-                <Link to={`/profile/orders/${order.id}`} className="group flex items-center justify-between p-5 border border-border bg-card hover:border-primary transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="flex -space-x-2">
+                <Link to={`/profile/orders/${order.id}`} className="group flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 sm:p-5 gap-3 sm:gap-4 border border-border bg-card hover:border-primary transition-colors">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="flex -space-x-2 shrink-0">
                       {order.items.slice(0, 3).map((item, j) => (
-                        <div key={j} className="w-10 h-10 bg-secondary flex items-center justify-center text-lg border border-border">{item.emoji}</div>
+                        <div key={j} className="w-9 h-9 sm:w-10 sm:h-10 bg-secondary flex items-center justify-center text-base sm:text-lg border border-border">{item.emoji}</div>
                       ))}
                     </div>
-                    <div>
-                      <p className="font-heading font-bold text-sm">{order.id}</p>
-                      <p className="font-mono text-[10px] text-muted-foreground">{order.date} · {order.items.length} item{order.items.length > 1 ? 's' : ''}</p>
+                    <div className="min-w-0">
+                      <p className="font-heading font-bold text-sm truncate">{order.id}</p>
+                      <p className="font-mono text-[10px] text-muted-foreground truncate">{order.date} · {order.items.length} item{order.items.length > 1 ? 's' : ''}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className={`font-mono text-[10px] uppercase tracking-wider px-3 py-1 ${statusColors[order.status] || ''}`}>{order.status}</span>
-                    <span className="font-heading font-bold">₹{order.grandTotal.toLocaleString('en-IN')}</span>
-                    <ChevronRight size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pl-12 sm:pl-0">
+                    <span className={`font-mono text-[10px] uppercase tracking-wider px-2 sm:px-3 py-1 whitespace-nowrap ${statusColors[order.status] || ''}`}>{order.status}</span>
+                    <span className="font-heading font-bold whitespace-nowrap">₹{order.grandTotal.toLocaleString('en-IN')}</span>
+                    <ChevronRight size={16} className="text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
                   </div>
                 </Link>
               </motion.div>
