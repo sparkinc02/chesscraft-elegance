@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Lock } from 'lucide-react';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
@@ -24,8 +24,7 @@ const states = [
 ];
 
 export default function ProfileSettings() {
-  const user = useAuthStore((s) => s.user);
-  const updateAddress = useAuthStore((s) => s.updateAddress);
+  const { user, updateAddress } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => { if (!user) navigate('/login'); }, [user, navigate]);

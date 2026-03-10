@@ -1,7 +1,8 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Check, Package, Truck, MapPin, CreditCard } from 'lucide-react';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuth } from '@/features/auth/AuthContext';
+import { useOrdersStore } from '@/stores/ordersStore';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useEffect } from 'react';
@@ -23,8 +24,8 @@ const statusIcons: Record<string, React.ReactNode> = {
 export default function OrderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const user = useAuthStore((s) => s.user);
-  const getOrder = useAuthStore((s) => s.getOrder);
+  const { user } = useAuth();
+  const getOrder = useOrdersStore((s) => s.getOrder);
 
   useEffect(() => { if (!user) navigate('/login'); }, [user, navigate]);
 

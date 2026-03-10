@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuth } from '@/features/auth/AuthContext';
+import { useSignupUser, useSendVerificationEmail, useVerifyEmail } from '@/features/auth/authService';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -18,15 +19,20 @@ interface SignupForm {
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { signup, sendEmailOtp, verifyEmailOtp } = useAuthStore();
+  const { setAuthData } = useAuth();
+  const signupMutation = useSignupUser();
+  const sendOtpMutation = useSendVerificationEmail();
+  const verifyMutation = useVerifyEmail();
   const [step, setStep] = useState<'form' | 'otp'>('form');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<SignupForm | null>(null);
+  const [otpToken, setOtpToken] = useState('');
   const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState('');
   const [shakeOtp, setShakeOtp] = useState(false);
   const [timer, setTimer] = useState(45);
+
+  const loading = signupMutation.isPending || sendOtpMutation.isPending || verifyMutation.isPending;
 
   const { register, handleSubmit, formState: { errors } } = useForm<SignupForm>();
 
@@ -39,58 +45,62 @@ export default function Signup() {
 
   const onFormSubmit = async (data: SignupForm) => {
     setFormData(data);
-    setLoading(true);
-    const result = await sendEmailOtp(data.email);
-    setLoading(false);
-    if (result.success) {
-      setStep('otp');
-      setTimer(45);
-      toast.success(`OTP sent to ${data.email}`);
-    } else {
-      toast.error(result.error || 'Failed to send OTP');
-    }
+    sendOtpMutation.mutate({ email: data.email }, {
+      onSuccess: (res) => {
+        setOtpToken(res.data.otpToken);
+        setStep('otp');
+        setTimer(45);
+        toast.success(`OTP sent to ${data.email}`);
+      },
+      onError: (err) => {
+        toast.error(err.message || 'Failed to send OTP');
+      },
+    });
   };
 
   const handleVerify = useCallback(async () => {
     if (otp.length !== 6) return;
-    setLoading(true);
-
-    // Verify email OTP
-    const verifyResult = await verifyEmailOtp(otp);
-    if (!verifyResult.success) {
-      setLoading(false);
-      setOtpError(verifyResult.error || 'Incorrect OTP. Try again.');
-      setShakeOtp(true);
-      setTimeout(() => setShakeOtp(false), 600);
-      return;
-    }
-
-    // Then create the account
-    const result = await signup(formData!.name, formData!.email, formData!.phone, formData!.password);
-    setLoading(false);
-    if (result.success) {
-      toast.success(`Welcome to ChessCraft, ${formData!.name}! ♛`);
-      navigate('/');
-    } else {
-      toast.error(result.error);
-    }
-  }, [otp, formData, signup, verifyEmailOtp, navigate]);
+    verifyMutation.mutate({ otp, token: otpToken }, {
+      onSuccess: () => {
+        // OTP verified, now create account
+        signupMutation.mutate(
+          { userName: formData!.name, email: formData!.email, phone: formData!.phone, password: formData!.password },
+          {
+            onSuccess: (res) => {
+              setAuthData(res.data.user, res.data.accessToken);
+              toast.success(`Welcome to ChessCraft, ${formData!.name}! ♛`);
+              navigate('/');
+            },
+            onError: (err) => {
+              toast.error(err.message || 'Signup failed');
+            },
+          }
+        );
+      },
+      onError: (err) => {
+        setOtpError(err.message || 'Incorrect OTP. Try again.');
+        setShakeOtp(true);
+        setTimeout(() => setShakeOtp(false), 600);
+      },
+    });
+  }, [otp, otpToken, formData, signupMutation, verifyMutation, setAuthData, navigate]);
 
   const handleGoogleSignup = async () => {
-    // The google token will be provided by the Google Sign-In SDK
-    // For now this is a placeholder — the parent app will pass the token
     toast.info('Google Sign-Up will be connected to your backend.');
   };
 
   const handleResend = async () => {
     if (!formData) return;
-    const result = await sendEmailOtp(formData.email);
-    if (result.success) {
-      setTimer(45);
-      toast.success(`OTP resent to ${formData.email}`);
-    } else {
-      toast.error(result.error || 'Failed to resend OTP');
-    }
+    sendOtpMutation.mutate({ email: formData.email }, {
+      onSuccess: (res) => {
+        setOtpToken(res.data.otpToken);
+        setTimer(45);
+        toast.success(`OTP resent to ${formData.email}`);
+      },
+      onError: (err) => {
+        toast.error(err.message || 'Failed to resend OTP');
+      },
+    });
   };
 
   return (
@@ -153,8 +163,8 @@ export default function Signup() {
                   {errors.password && <p className="font-mono text-[10px] text-destructive mt-1">{errors.password.message}</p>}
                 </div>
 
-                <button type="submit" className="w-full py-4 bg-secondary text-secondary-foreground font-mono text-xs uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-colors">
-                  Create Account
+                <button type="submit" disabled={loading} className="w-full py-4 bg-secondary text-secondary-foreground font-mono text-xs uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-50">
+                  {loading ? 'Sending OTP...' : 'Create Account'}
                 </button>
 
                 <div className="relative my-6">
