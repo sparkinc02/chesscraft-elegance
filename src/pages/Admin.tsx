@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShieldCheck, ArrowLeft } from 'lucide-react';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuth } from '@/features/auth/AuthContext';
 import Navbar from '@/components/Navbar';
 
 export default function Admin() {
-  const user = useAuthStore((s) => s.user);
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {

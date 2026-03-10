@@ -4,7 +4,7 @@ import { Menu, X, ShoppingBag, Sun, Moon, User, ShieldCheck, LogOut, Settings, P
 import { Link, useNavigate } from 'react-router-dom';
 import { useCartStore } from '@/stores/cartStore';
 import { useUIStore } from '@/stores/uiStore';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
 
 export default function Navbar() {
@@ -15,8 +15,7 @@ export default function Navbar() {
   const totalItems = useCartStore((s) => s.totalItems());
   const toggleCart = useUIStore((s) => s.toggleCart);
   const { isDark, toggle: toggleTheme } = useTheme();
-  const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {

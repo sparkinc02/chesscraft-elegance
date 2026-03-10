@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuth } from '@/features/auth/AuthContext';
+import { useLoginUser, useForgotPassword, useResetPassword } from '@/features/auth/authService';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -23,10 +24,12 @@ interface ResetForm {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, forgotPassword, resetPassword } = useAuthStore();
+  const { setAuthData } = useAuth();
+  const loginMutation = useLoginUser();
+  const forgotMutation = useForgotPassword();
+  const resetMutation = useResetPassword();
   const [view, setView] = useState<View>('login');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState('');
@@ -35,36 +38,37 @@ export default function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>();
   const resetForm = useForm<ResetForm>();
 
+  const loading = loginMutation.isPending || forgotMutation.isPending || resetMutation.isPending;
+
   const onLogin = async (data: LoginForm) => {
-    setLoading(true);
-    const result = await login(data.email, data.password);
-    setLoading(false);
-    if (result.success) {
-      toast.success('Welcome back! ♛');
-      navigate('/');
-    } else {
-      toast.error(result.error);
-    }
+    loginMutation.mutate(data, {
+      onSuccess: (res) => {
+        setAuthData(res.data.user, res.data.accessToken);
+        toast.success('Welcome back! ♛');
+        navigate('/');
+      },
+      onError: (err) => {
+        toast.error(err.message || 'Login failed');
+      },
+    });
   };
 
   const handleGoogleLogin = async () => {
-    // The google token will be provided by the Google Sign-In SDK
-    // For now this is a placeholder — the parent app will pass the token
     toast.info('Google Sign-In will be connected to your backend.');
   };
 
   const handleForgotEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetEmail.trim()) return;
-    setLoading(true);
-    const result = await forgotPassword(resetEmail);
-    setLoading(false);
-    if (result.success) {
-      toast.success(`Reset code sent to ${resetEmail}`);
-      setView('forgot-reset');
-    } else {
-      toast.error(result.error || 'Failed to send reset code');
-    }
+    forgotMutation.mutate({ email: resetEmail }, {
+      onSuccess: () => {
+        toast.success(`Reset code sent to ${resetEmail}`);
+        setView('forgot-reset');
+      },
+      onError: (err) => {
+        toast.error(err.message || 'Failed to send reset code');
+      },
+    });
   };
 
   const handleResetPassword = async (data: ResetForm) => {
@@ -72,18 +76,20 @@ export default function Login() {
       resetForm.setError('confirmPassword', { message: 'Passwords do not match' });
       return;
     }
-    const result = await resetPassword(otp, data.newPassword);
-    if (result.success) {
-      toast.success('Password reset successfully!');
-      setView('login');
-      setOtp('');
-      setOtpError('');
-      setResetEmail('');
-    } else {
-      setOtpError(result.error || 'Incorrect OTP. Try again.');
-      setShakeOtp(true);
-      setTimeout(() => setShakeOtp(false), 600);
-    }
+    resetMutation.mutate({ token: otp, newPassword: data.newPassword }, {
+      onSuccess: () => {
+        toast.success('Password reset successfully!');
+        setView('login');
+        setOtp('');
+        setOtpError('');
+        setResetEmail('');
+      },
+      onError: (err) => {
+        setOtpError(err.message || 'Incorrect OTP. Try again.');
+        setShakeOtp(true);
+        setTimeout(() => setShakeOtp(false), 600);
+      },
+    });
   };
 
   const getPasswordStrength = (pw: string) => {

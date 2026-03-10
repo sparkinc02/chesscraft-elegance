@@ -1,7 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuth } from '@/features/auth/AuthContext';
+import { useOrdersStore } from '@/stores/ordersStore';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useEffect } from 'react';
@@ -14,8 +15,8 @@ const statusColors: Record<string, string> = {
 };
 
 export default function ProfileOrders() {
-  const user = useAuthStore((s) => s.user);
-  const orders = useAuthStore((s) => s.orders);
+  const { user } = useAuth();
+  const orders = useOrdersStore((s) => s.orders);
   const navigate = useNavigate();
 
   useEffect(() => { if (!user) navigate('/login'); }, [user, navigate]);
